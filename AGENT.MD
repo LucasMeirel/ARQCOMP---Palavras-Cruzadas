@@ -60,3 +60,10 @@ menos uma outra.
 8. Efeito de comemoração e congratulação após acertar a resposta
 
 Estrutura sugerida: index.html, style.css, script.js e README.md.
+
+Parte 4 — Publicação e entrega
+1. Publique com o GitHub Pages: no repositório, abra Settings → Pages. Em "Source", escolha
+Deploy from a branch, selecione a branch main e a pasta / (root) e clique em Save.
+2. Em alguns minutos o site fica no ar em: https://SEU-USUARIO.github.io/arqcomp-cruzadinha/
+3. Teste o link numa janela anônima do navegador. Se abrir lá, abre para o professor.
+

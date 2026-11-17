@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Palavras Cruzadas — Inicial</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Palavras Cruzadas</h1>
+  </header>
+
+  <main>
+    <section class="controls">
+      <button id="reset">Reiniciar</button>
+      <label class="direction-toggle">Direção:
+        <select id="direction">
+          <option value="across">Across</option>
+          <option value="down">Down</option>
+        </select>
+      </label>
+    </section>
+
+    <section id="puzzleArea">
+      <div id="gridContainer"></div>
+      <div id="clueBox">
+        <div id="clueLabel">Pista</div>
+        <div id="clueText">Nenhuma pista</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
