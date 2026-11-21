@@ -4,7 +4,7 @@ Jogo de palavras cruzadas desenvolvido em HTML, CSS e JavaScript puros para revi
 
 ## Link do Site Publicado
 
-- Acesse o jogo online: `https://lucasmeirel.github.io/ARQCOMP---Palavras-Cruzadas` *(substitua `SEU-USUARIO` pelo seu nome de usuário do GitHub após ativar o GitHub Pages)*
+- Acesse o jogo online: `https://lucasmeirel.github.io/ARQCOMP---Palavras-Cruzadas`
 
 ## Como Jogar
 
