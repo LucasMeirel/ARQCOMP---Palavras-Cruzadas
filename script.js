@@ -1,341 +1,675 @@
-// script.js — implementação inicial adaptada para carregamento local (sem servidor)
-(function(){
-  // Puzzle embutido para permitir execução via file:// sem fetch
-  const PUZZLE = {
-    "width": 5,
-    "height": 5,
-    "entries": [
-      { "id": 1, "word": "RAM", "clue": "memória temporária, ou carneiro em inglês", "row": 0, "col": 0, "dir": "across" },
-      { "id": 2, "word": "FLASH", "clue": "memória, ou herói velocista", "row": 2, "col": 0, "dir": "across" }
-    ]
-  }
-
-  const resetBtn = document.getElementById('reset')
-  const gridContainer = document.getElementById('gridContainer')
-  const clueText = document.getElementById('clueText')
-  const clueLabel = document.getElementById('clueLabel')
-  const directionSelect = document.getElementById('direction')
-
-  const STORAGE_KEY = 'crossword:current'
-
-  let puzzle = null
-  let state = { cells: {} } // map "r,c" -> letter
-  let active = { row:0, col:0, dir: 'across' }
-  let celebrated = false
-
-  // Normalize input and solutions to match AGENT.MD requirements:
-  // - uppercase letters
-  // - remove diacritics (accents)
-  // - remove spaces
-  function norm(s){
-    if(!s && s!=='') return ''
-    return String(s)
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, '')
-      .toUpperCase()
-  }
-
-  function saveState(){
-    try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-    }catch(e){/* ignore */}
-  }
-  function loadState(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if(raw) state = JSON.parse(raw)
-    }catch(e){state = {cells:{}}}
-  }
-
-  function clearState(){ state = { cells: {} }; saveState() }
-
-  // build matrix from entries
-  function buildMatrix(p){
-    const mat = Array.from({length:p.height}, ()=>Array.from({length:p.width}, ()=>({black:true, letter:null, numbers:[]})))
-    // place entries
-    p.entries.forEach((e, idx)=>{
-      const word = norm(e.word)
-      let r = e.row, c = e.col
-      for(let i=0;i<word.length;i++){
-        if(r<0||r>=p.height||c<0||c>=p.width) break
-        mat[r][c].black = false
-        mat[r][c].solution = mat[r][c].solution || word[i]
-        mat[r][c].entryIds = mat[r][c].entryIds || []
-        mat[r][c].entryIds.push(e.id || idx+1)
-        if(e.dir === 'across') c++
-        else r++
-      }
-    })
-    return mat
-  }
-
-  function computeNumbers(mat){
-    let n = 1
-    const height = mat.length, width = mat[0].length
-    for(let r=0;r<height;r++){
-      for(let c=0;c<width;c++){
-        if(mat[r][c].black) continue
-        const startAcross = (c===0 || mat[r][c-1].black) && (c+1<width && !mat[r][c+1].black)
-        const startDown = (r===0 || mat[r-1][c].black) && (r+1<height && !mat[r+1][c].black)
-        if(startAcross || startDown){
-          mat[r][c].number = n++
-        }
-      }
+// Puzzle embutido para execução local (file://) e GitHub Pages
+const PUZZLE = {
+  "width": 16,
+  "height": 14,
+  "entries": [
+    {
+      "number": 1,
+      "word": "ROM",
+      "clue": "Memória que armazena a parte mais essencial de sua placa mãe.",
+      "row": 0,
+      "col": 7,
+      "dir": "across"
+    },
+    {
+      "number": 2,
+      "word": "MEMORIADEMASSA",
+      "clue": "Armazenamento permanente onde o seu sistema operacional está localizado, por exemplo.",
+      "row": 0,
+      "col": 9,
+      "dir": "down"
+    },
+    {
+      "number": 3,
+      "word": "DUALCORE",
+      "clue": "Quando um processador possui exatamente dois núcleos de processamento.",
+      "row": 1,
+      "col": 11,
+      "dir": "down"
+    },
+    {
+      "number": 4,
+      "word": "RAM",
+      "clue": "Memória temporária em segundo lugar na hierarquia de memórias, ou carneiro em Inglês",
+      "row": 2,
+      "col": 7,
+      "dir": "across"
+    },
+    {
+      "number": 5,
+      "word": "ULA",
+      "clue": "Componente que faz as contas em uma calculadora, ou uma dança típica Havaiana sem sua letra inicial.",
+      "row": 2,
+      "col": 11,
+      "dir": "across"
+    },
+    {
+      "number": 6,
+      "word": "ADDRESSBUS",
+      "clue": "Linha física que transporta “endereços”, similar à um transporte coletivo altamente usado.",
+      "row": 2,
+      "col": 13,
+      "dir": "down"
+    },
+    {
+      "number": 7,
+      "word": "DMA",
+      "clue": "Recurso de hardware que permite que os dispositivos de hardware acessem a memória do sistema independentemente da CPU.",
+      "row": 3,
+      "col": 0,
+      "dir": "down"
+    },
+    {
+      "number": 8,
+      "word": "UC",
+      "clue": "Componente que encaminha aquilo que você encaminha para outras partes (Mas não inverta o nome dela!).",
+      "row": 3,
+      "col": 5,
+      "dir": "down"
+    },
+    {
+      "number": 9,
+      "word": "MICROCONTROLADOR",
+      "clue": "Computador pequeno e completo, responsável por tarefas específicas e relativamente simples.",
+      "row": 4,
+      "col": 0,
+      "dir": "across"
+    },
+    {
+      "number": 10,
+      "word": "REGISTRADORES",
+      "clue": "Tipo de memória que fica no topo da hierarquia.",
+      "row": 6,
+      "col": 2,
+      "dir": "across"
+    },
+    {
+      "number": 11,
+      "word": "EEPROM",
+      "clue": "Tipo de memória comumente utilizada para manter dados mesmo após uma queda de energia.",
+      "row": 6,
+      "col": 3,
+      "dir": "down"
+    },
+    {
+      "number": 12,
+      "word": "CACHE",
+      "clue": "Memória volátil de altíssima velocidade que funciona como ponte intermediária entra o processador e a RAM. Ou remuneração de um artista.",
+      "row": 8,
+      "col": 5,
+      "dir": "across"
+    },
+    {
+      "number": 12,
+      "word": "CPU",
+      "clue": "Peça responsável pelo processamento de dados, ou o nome incorretamente dado à um gabinete.",
+      "row": 8,
+      "col": 5,
+      "dir": "down"
+    },
+    {
+      "number": 13,
+      "word": "DATABUS",
+      "clue": "Sistema de comunicação entre diferentes componentes em um computador.",
+      "row": 10,
+      "col": 8,
+      "dir": "across"
+    },
+    {
+      "number": 14,
+      "word": "FLASH",
+      "clue": "armazenamento não volátil comumente encontrada em SSDs, ou super-herói velocista",
+      "row": 12,
+      "col": 6,
+      "dir": "across"
     }
-  }
+  ]
+};
 
-  function findEntryAt(r,c,dir){
-    if(!puzzle) return null
-    const entries = puzzle.entries.filter(e=>{
-      if(e.dir!==dir) return false
-      let rr=e.row, cc=e.col
-      for(let i=0;i<e.word.length;i++){
-        if(rr===r && cc===c) return true
-        if(e.dir==='across') cc++
-        else rr++
+const STORAGE_KEY = "arqcomp:cruzadinha:v1";
+
+// Estado da aplicação
+let boardState = []; // Matriz [row][col] com caracteres digitados
+let cellMap = [];    // Matriz [row][col] com metadados da célula (letra esperada, número, palavras associadas)
+let activeDirection = "across"; // "across" | "down"
+let focusedCell = null; // { row, col }
+let checkedResults = null; // Map de chave da palavra -> true (certa) | false (errada) | null
+
+// Referências de elementos da interface
+const gridEl = document.getElementById("crossword-grid");
+const cluesAcrossEl = document.getElementById("clues-across");
+const cluesDownEl = document.getElementById("clues-down");
+const scoreCounterEl = document.getElementById("score-counter");
+const directionBtn = document.getElementById("btn-direction");
+const directionLabelEl = document.getElementById("direction-label");
+const checkBtn = document.getElementById("btn-check");
+const resetBtn = document.getElementById("btn-reset");
+const activeClueTagEl = document.getElementById("active-clue-tag");
+const activeClueTextEl = document.getElementById("active-clue-text");
+const celebrationOverlayEl = document.getElementById("celebration-overlay");
+const confettiContainerEl = document.getElementById("confetti-container");
+const closeCelebrationBtn = document.getElementById("btn-close-celebration");
+const restartCelebrationBtn = document.getElementById("btn-restart-celebration");
+
+// Normaliza caractere para letra maiúscula sem acento (A-Z)
+function normalizeLetter(raw) {
+  if (!raw) return "";
+  const cleaned = raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z]/g, "")
+    .toUpperCase();
+  return cleaned.length > 0 ? cleaned[cleaned.length - 1] : "";
+}
+
+function entryKey(entry) {
+  return `${entry.number}-${entry.dir}`;
+}
+
+// Constrói o mapa lógico do tabuleiro a partir das palavras do PUZZLE
+function buildCellMap() {
+  cellMap = Array.from({ length: PUZZLE.height }, () =>
+    Array.from({ length: PUZZLE.width }, () => ({
+      isPlayable: false,
+      solution: "",
+      number: null,
+      entries: []
+    }))
+  );
+
+  PUZZLE.entries.forEach((entry) => {
+    for (let i = 0; i < entry.word.length; i++) {
+      const r = entry.row + (entry.dir === "down" ? i : 0);
+      const c = entry.col + (entry.dir === "across" ? i : 0);
+      const cell = cellMap[r][c];
+      cell.isPlayable = true;
+      cell.solution = entry.word[i];
+      if (i === 0) {
+        cell.number = entry.number;
       }
-      return false
-    })
-    return entries[0]||null
-  }
-
-  function render(){
-    gridContainer.innerHTML = ''
-    if(!puzzle) return
-    const mat = buildMatrix(puzzle)
-    computeNumbers(mat)
-
-    const grid = document.createElement('div')
-    grid.className = 'grid'
-    grid.style.gridTemplateColumns = `repeat(${puzzle.width}, 44px)`
-    gridContainer.appendChild(grid)
-
-    for(let r=0;r<puzzle.height;r++){
-      for(let c=0;c<puzzle.width;c++){
-        const cell = document.createElement('div')
-        cell.className = 'cell'
-        if(mat[r][c].black){ cell.classList.add('black'); grid.appendChild(cell); continue }
-        if(mat[r][c].number) {
-          const num = document.createElement('div')
-          num.className = 'number'
-          num.textContent = mat[r][c].number
-          cell.appendChild(num)
-        }
-        const input = document.createElement('input')
-        input.setAttribute('maxlength','1')
-        input.dataset.r = r
-        input.dataset.c = c
-        input.value = state.cells[`${r},${c}`] || ''
-        input.addEventListener('focus', onFocus)
-        input.addEventListener('input', onInput)
-        input.addEventListener('keydown', onKeyDown)
-        cell.appendChild(input)
-        grid.appendChild(cell)
-      }
+      cell.entries.push(entry);
     }
+  });
+}
 
-    // restore active highlight
-    highlightActive()
-    updateClueBox()
-  }
+function createEmptyBoardState() {
+  return Array.from({ length: PUZZLE.height }, () =>
+    Array.from({ length: PUZZLE.width }, () => "")
+  );
+}
 
-  function onFocus(e){
-    const r = parseInt(e.target.dataset.r,10)
-    const c = parseInt(e.target.dataset.c,10)
-    active.row = r; active.col = c
-    active.dir = directionSelect.value
-    highlightActive()
-    updateClueBox()
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(boardState));
+  } catch (e) {
+    // Ignora falhas de armazenamento caso localStorage esteja bloqueado
   }
+}
 
-  function onInput(e){
-    const el = e.target
-    const r = parseInt(el.dataset.r,10), c = parseInt(el.dataset.c,10)
-    // limit to one grapheme cluster (basic): use Array.from
-    const v = Array.from(el.value)[0] || ''
-    const nv = norm(v)
-    el.value = nv
-    state.cells[`${r},${c}`] = nv
-    saveState()
-    // auto advance
-    moveForward(r,c)
-    checkReveals()
-  }
-
-  function onKeyDown(e){
-    const el = e.target
-    const r = parseInt(el.dataset.r,10), c = parseInt(el.dataset.c,10)
-    if(e.key === 'ArrowRight') { e.preventDefault(); focusAt(r, c+1); return }
-    if(e.key === 'ArrowLeft') { e.preventDefault(); focusAt(r, c-1); return }
-    if(e.key === 'ArrowUp') { e.preventDefault(); focusAt(r-1, c); return }
-    if(e.key === 'ArrowDown') { e.preventDefault(); focusAt(r+1, c); return }
-    if(e.key === 'Backspace'){
-      if(!el.value){
-        // move back
-        const prev = moveBackward(r,c)
-        if(prev) focusAt(prev.r, prev.c)
-      } else {
-        // clear
-        el.value = ''
-        state.cells[`${r},${c}`] = ''
-        saveState()
-      }
-    }
-  }
-
-  function focusAt(r,c){
-    const sel = gridContainer.querySelector(`input[data-r='${r}'][data-c='${c}']`)
-    if(sel) sel.focus()
-  }
-
-  function moveForward(r,c){
-    const dir = directionSelect.value
-    let nr = r, nc = c
-    if(dir === 'across') nc = c+1
-    else nr = r+1
-    focusAt(nr,nc)
-  }
-  function moveBackward(r,c){
-    const dir = directionSelect.value
-    if(dir === 'across') return {r, c: c-1}
-    return {r: r-1, c}
-  }
-
-  function highlightActive(){
-    const inputs = gridContainer.querySelectorAll('.cell')
-    inputs.forEach(x=>x.classList.remove('active'))
-    const activeInputs = gridContainer.querySelectorAll(`input[data-r='${active.row}'][data-c='${active.col}']`)
-    // highlight active word
-    const entry = findEntryAt(active.row, active.col, active.dir)
-    if(entry){
-      let r = entry.row, c = entry.col
-      for(let i=0;i<entry.word.length;i++){
-        const cell = gridContainer.querySelector(`input[data-r='${r}'][data-c='${c}']`)
-        if(cell) cell.parentElement.classList.add('active')
-        if(entry.dir === 'across') c++
-        else r++
-      }
-    } else {
-      const single = gridContainer.querySelector(`input[data-r='${active.row}'][data-c='${active.col}']`)
-      if(single) single.parentElement.classList.add('active')
-    }
-  }
-
-  function updateClueBox(){
-    const entry = findEntryAt(active.row, active.col, active.dir)
-    if(entry){
-      clueLabel.textContent = `Pista (#${entry.id || ''})`
-      clueText.textContent = entry.clue || 'Sem pista'
-    } else {
-      clueLabel.textContent = 'Pista'
-      clueText.textContent = 'Nenhuma pista'
-    }
-  }
-
-  function checkReveals(){
-    // mark entries that are fully correct
-    if(!puzzle) return
-    puzzle.entries.forEach(e=>{
-      let r=e.row,c=e.col, ok=true
-      for(let i=0;i<e.word.length;i++){
-        const expected = norm(e.word[i])
-        const got = state.cells[`${r},${c}`] || ''
-        if(got !== expected) { ok=false; break }
-        if(e.dir==='across') c++
-        else r++
-      }
-      e.revealed = !!ok
-    })
-    // update UI
-    // walk grid and set .revealed on cells that belong to revealed entries
-    for(let r=0;r<puzzle.height;r++){
-      for(let c=0;c<puzzle.width;c++){
-        const cell = gridContainer.querySelector(`.cell:nth-child(${r*puzzle.width + c + 1})`)
-        if(!cell) continue
-        // determine if any entry covering this cell is revealed
-        const revealed = puzzle.entries.some(e=>{
-          let rr=e.row, cc=e.col
-          for(let i=0;i<e.word.length;i++){
-            if(rr===r && cc===c) return !!e.revealed
-            if(e.dir==='across') cc++
-            else rr++
+function loadState() {
+  boardState = createEmptyBoardState();
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const parsed = JSON.parse(saved);
+    if (Array.isArray(parsed) && parsed.length === PUZZLE.height) {
+      for (let r = 0; r < PUZZLE.height; r++) {
+        if (Array.isArray(parsed[r]) && parsed[r].length === PUZZLE.width) {
+          for (let c = 0; c < PUZZLE.width; c++) {
+            if (cellMap[r][c].isPlayable) {
+              boardState[r][c] = normalizeLetter(parsed[r][c]);
+            }
           }
-          return false
-        })
-        if(revealed) cell.classList.add('revealed')
-        else cell.classList.remove('revealed')
+        }
       }
     }
+  } catch (e) {
+    boardState = createEmptyBoardState();
+  }
+}
 
-    // check complete puzzle and celebrate once
-    const total = puzzle.entries.length
-    const revealedCount = puzzle.entries.filter(e=>e.revealed).length
-    if(total>0 && revealedCount === total && !celebrated){
-      celebrated = true
-      launchConfetti()
+// Renderiza a grelha HTML
+function renderGrid() {
+  gridEl.innerHTML = "";
+  gridEl.style.gridTemplateColumns = `repeat(${PUZZLE.width}, var(--cell-size))`;
+  gridEl.style.gridTemplateRows = `repeat(${PUZZLE.height}, var(--cell-size))`;
+
+  for (let r = 0; r < PUZZLE.height; r++) {
+    for (let c = 0; c < PUZZLE.width; c++) {
+      const meta = cellMap[r][c];
+      const cellDiv = document.createElement("div");
+      cellDiv.className = meta.isPlayable ? "cell" : "cell black";
+      cellDiv.dataset.row = r;
+      cellDiv.dataset.col = c;
+
+      if (meta.isPlayable) {
+        if (meta.number !== null) {
+          const numSpan = document.createElement("span");
+          numSpan.className = "cell-number";
+          numSpan.textContent = meta.number;
+          cellDiv.appendChild(numSpan);
+        }
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.maxLength = 2;
+        input.autocomplete = "off";
+        input.spellcheck = false;
+        input.className = "cell-input";
+        input.value = boardState[r][c] || "";
+        input.setAttribute("aria-label", `Linha ${r + 1}, Coluna ${c + 1}`);
+
+        input.addEventListener("focus", () => handleCellFocus(r, c));
+        input.addEventListener("click", () => handleCellClick(r, c));
+        input.addEventListener("input", (e) => handleCellInput(e, r, c));
+        input.addEventListener("keydown", (e) => handleCellKeyDown(e, r, c));
+
+        cellDiv.appendChild(input);
+      }
+
+      gridEl.appendChild(cellDiv);
+    }
+  }
+}
+
+// Renderiza as listas de pistas Horizontais e Verticais
+function renderClues() {
+  cluesAcrossEl.innerHTML = "";
+  cluesDownEl.innerHTML = "";
+
+  PUZZLE.entries.forEach((entry) => {
+    const li = document.createElement("li");
+    li.className = "clue-item";
+    li.dataset.key = entryKey(entry);
+    li.innerHTML = `<span class="clue-num">${entry.number}.</span> ${entry.clue}`;
+
+    li.addEventListener("click", () => {
+      activeDirection = entry.dir;
+      updateDirectionLabel();
+      focusCell(entry.row, entry.col);
+    });
+
+    if (entry.dir === "across") {
+      cluesAcrossEl.appendChild(li);
+    } else {
+      cluesDownEl.appendChild(li);
+    }
+  });
+}
+
+function getInputAt(r, c) {
+  return gridEl.querySelector(`.cell[data-row="${r}"][data-col="${c}"] .cell-input`);
+}
+
+function focusCell(r, c) {
+  const input = getInputAt(r, c);
+  if (input) {
+    input.focus();
+  }
+}
+
+function getActiveEntry() {
+  if (!focusedCell) return null;
+  const meta = cellMap[focusedCell.row][focusedCell.col];
+  if (!meta || !meta.isPlayable) return null;
+
+  let match = meta.entries.find((e) => e.dir === activeDirection);
+  if (!match && meta.entries.length > 0) {
+    match = meta.entries[0];
+    activeDirection = match.dir;
+    updateDirectionLabel();
+  }
+  return match || null;
+}
+
+function handleCellFocus(r, c) {
+  focusedCell = { row: r, col: c };
+  updateHighlights();
+}
+
+function handleCellClick(r, c) {
+  // Se clicar novamente na mesma célula já focada e ela cruzar duas palavras, alterna a direção
+  if (focusedCell && focusedCell.row === r && focusedCell.col === c) {
+    const meta = cellMap[r][c];
+    if (meta.entries.length > 1) {
+      activeDirection = activeDirection === "across" ? "down" : "across";
+      updateDirectionLabel();
+      updateHighlights();
+    }
+  }
+}
+
+function handleCellInput(e, r, c) {
+  const letter = normalizeLetter(e.target.value);
+  e.target.value = letter;
+  boardState[r][c] = letter;
+
+  // Limpa marcação visual de conferência anterior ao editar
+  if (checkedResults) {
+    checkedResults = null;
+  }
+
+  saveState();
+  updateScoreCounter();
+  updateHighlights();
+
+  if (letter) {
+    moveToNextCellInWord(r, c);
+  }
+}
+
+function handleCellKeyDown(e, r, c) {
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    if (boardState[r][c] !== "") {
+      boardState[r][c] = "";
+      e.target.value = "";
+      if (checkedResults) checkedResults = null;
+      saveState();
+      updateScoreCounter();
+      updateHighlights();
+    } else {
+      moveToPrevCellInWord(r, c);
+    }
+    return;
+  }
+
+  if (e.key === "Delete") {
+    e.preventDefault();
+    boardState[r][c] = "";
+    e.target.value = "";
+    if (checkedResults) checkedResults = null;
+    saveState();
+    updateScoreCounter();
+    updateHighlights();
+    return;
+  }
+
+  if (e.key === "ArrowRight") {
+    e.preventDefault();
+    activeDirection = "across";
+    updateDirectionLabel();
+    moveStep(r, c, 0, 1);
+  } else if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    activeDirection = "across";
+    updateDirectionLabel();
+    moveStep(r, c, 0, -1);
+  } else if (e.key === "ArrowDown") {
+    e.preventDefault();
+    activeDirection = "down";
+    updateDirectionLabel();
+    moveStep(r, c, 1, 0);
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    activeDirection = "down";
+    updateDirectionLabel();
+    moveStep(r, c, -1, 0);
+  } else if (e.key === "Enter" || e.key === "Tab") {
+    e.preventDefault();
+    moveToNextWord(e.shiftKey ? -1 : 1);
+  }
+}
+
+function moveStep(r, c, dr, dc) {
+  let nr = r + dr;
+  let nc = c + dc;
+  while (nr >= 0 && nr < PUZZLE.height && nc >= 0 && nc < PUZZLE.width) {
+    if (cellMap[nr][nc].isPlayable) {
+      focusCell(nr, nc);
+      return;
+    }
+    nr += dr;
+    nc += dc;
+  }
+}
+
+function moveToNextCellInWord(r, c) {
+  const entry = getActiveEntry();
+  if (!entry) return;
+  const nr = r + (entry.dir === "down" ? 1 : 0);
+  const nc = c + (entry.dir === "across" ? 1 : 0);
+  if (
+    nr < entry.row + (entry.dir === "down" ? entry.word.length : 1) &&
+    nc < entry.col + (entry.dir === "across" ? entry.word.length : 1)
+  ) {
+    focusCell(nr, nc);
+  }
+}
+
+function moveToPrevCellInWord(r, c) {
+  const entry = getActiveEntry();
+  if (!entry) return;
+  const pr = r - (entry.dir === "down" ? 1 : 0);
+  const pc = c - (entry.dir === "across" ? 1 : 0);
+  if (pr >= entry.row && pc >= entry.col) {
+    focusCell(pr, pc);
+  }
+}
+
+function moveToNextWord(step) {
+  const current = getActiveEntry();
+  let idx = current ? PUZZLE.entries.indexOf(current) : -1;
+  const nextIdx = (idx + step + PUZZLE.entries.length) % PUZZLE.entries.length;
+  const nextEntry = PUZZLE.entries[nextIdx];
+  activeDirection = nextEntry.dir;
+  updateDirectionLabel();
+  focusCell(nextEntry.row, nextEntry.col);
+}
+
+function updateDirectionLabel() {
+  directionLabelEl.textContent = activeDirection === "across" ? "Horizontal" : "Vertical";
+}
+
+// Atualiza destaques visuais do tabuleiro, pistas e estados de acerto/erro
+function updateHighlights() {
+  const activeEntry = getActiveEntry();
+
+  // Atualiza barra da pista ativa
+  if (activeEntry) {
+    const dirName = activeEntry.dir === "across" ? "Horizontal" : "Vertical";
+    activeClueTagEl.textContent = `${activeEntry.number} — ${dirName}`;
+    activeClueTextEl.textContent = activeEntry.clue;
+  } else {
+    activeClueTagEl.textContent = "Selecione uma célula";
+    activeClueTextEl.textContent = "Clique em qualquer casa branca do tabuleiro para ver a pista correspondente.";
+  }
+
+  // Conjuntos de coordenadas da palavra ativa e de palavras certas/erradas
+  const activeCoords = new Set();
+  if (activeEntry) {
+    for (let i = 0; i < activeEntry.word.length; i++) {
+      const r = activeEntry.row + (activeEntry.dir === "down" ? i : 0);
+      const c = activeEntry.col + (activeEntry.dir === "across" ? i : 0);
+      activeCoords.add(`${r},${c}`);
     }
   }
 
-  // confetti: lightweight DOM-based confetti for local use
-  function launchConfetti(){
-    const container = document.createElement('div')
-    container.style.position = 'absolute'
-    container.style.left = '50%'
-    container.style.top = '20px'
-    container.style.width = '0'
-    container.style.height = '0'
-    container.style.pointerEvents = 'none'
-    document.body.appendChild(container)
+  const correctCoords = new Set();
+  const wrongCoords = new Set();
 
-    const colors = ['#f94144','#f3722c','#f9c74f','#90be6d','#43aa8b','#577590']
-    const pieces = 60
-    for(let i=0;i<pieces;i++){
-      const p = document.createElement('div')
-      p.className = 'confetti-piece'
-      p.style.background = colors[Math.floor(Math.random()*colors.length)]
-      p.style.left = (Math.random()*200 - 100) + 'px'
-      p.style.top = '0px'
-      p.style.opacity = Math.random()*0.8 + 0.6
-      p.style.transform = `translateX(${Math.random()*200-100}px) rotate(${Math.random()*360}deg)`
-      p.style.animationDuration = (2+Math.random()*2) + 's'
-      p.style.animationDelay = (Math.random()*0.3) + 's'
-      container.appendChild(p)
-      // remove piece after animation
-      setTimeout(()=>{ if(p.parentElement) p.parentElement.removeChild(p) }, 4500)
-    }
-    // remove container after timeout
-    setTimeout(()=>{ if(container.parentElement) container.parentElement.removeChild(container) }, 5000)
+  if (checkedResults) {
+    PUZZLE.entries.forEach((entry) => {
+      const res = checkedResults.get(entryKey(entry));
+      for (let i = 0; i < entry.word.length; i++) {
+        const r = entry.row + (entry.dir === "down" ? i : 0);
+        const c = entry.col + (entry.dir === "across" ? i : 0);
+        if (res === true) {
+          correctCoords.add(`${r},${c}`);
+        } else if (res === false) {
+          wrongCoords.add(`${r},${c}`);
+        }
+      }
+    });
   }
 
-  // loader
-  function loadPuzzleFromObject(obj){
-    // basic validation and normalization
-    const p = {
-      width: obj.width|0,
-      height: obj.height|0,
-      entries: (obj.entries||[]).map((e, idx)=>({
-        id: e.id || idx+1,
-        word: norm(e.word||''),
-        clue: e.clue||'',
-        row: e.row|0,
-        col: e.col|0,
-        dir: e.dir || 'across'
-      }))
+  // Atualiza classes de cada célula
+  const cells = gridEl.querySelectorAll(".cell");
+  cells.forEach((cellEl) => {
+    const r = Number(cellEl.dataset.row);
+    const c = Number(cellEl.dataset.col);
+    const coord = `${r},${c}`;
+
+    cellEl.classList.remove("in-active-word", "is-focused", "word-correct", "word-wrong");
+
+    if (wrongCoords.has(coord)) {
+      cellEl.classList.add("word-wrong");
+    } else if (correctCoords.has(coord)) {
+      cellEl.classList.add("word-correct");
     }
-    puzzle = p
-    loadState()
-    render()
-    checkReveals()
+
+    if (activeCoords.has(coord)) {
+      cellEl.classList.add("in-active-word");
+    }
+
+    if (focusedCell && focusedCell.row === r && focusedCell.col === c) {
+      cellEl.classList.add("is-focused");
+    }
+  });
+
+  // Atualiza classes da lista de pistas
+  const clueItems = document.querySelectorAll(".clue-item");
+  clueItems.forEach((item) => {
+    const key = item.dataset.key;
+    item.classList.remove("active", "correct", "wrong");
+
+    if (activeEntry && entryKey(activeEntry) === key) {
+      item.classList.add("active");
+    }
+
+    if (checkedResults && checkedResults.has(key)) {
+      const res = checkedResults.get(key);
+      if (res === true) item.classList.add("correct");
+      if (res === false) item.classList.add("wrong");
+    }
+  });
+}
+
+// Verifica quantas palavras estão totalmente corretas
+function evaluateWords() {
+  let correctCount = 0;
+  const results = new Map();
+
+  PUZZLE.entries.forEach((entry) => {
+    let userWord = "";
+    for (let i = 0; i < entry.word.length; i++) {
+      const r = entry.row + (entry.dir === "down" ? i : 0);
+      const c = entry.col + (entry.dir === "across" ? i : 0);
+      userWord += boardState[r][c] || "";
+    }
+
+    if (userWord === entry.word) {
+      correctCount++;
+      results.set(entryKey(entry), true);
+    } else if (userWord.length > 0) {
+      results.set(entryKey(entry), false);
+    } else {
+      results.set(entryKey(entry), false);
+    }
+  });
+
+  return { correctCount, total: PUZZLE.entries.length, results };
+}
+
+function updateScoreCounter() {
+  const { correctCount, total } = evaluateWords();
+  scoreCounterEl.textContent = `${correctCount} de ${total} palavras`;
+}
+
+// Botão Conferir: marca palavras certas/erradas, atualiza contador e celebra se 100% corretas
+function handleCheck() {
+  const { correctCount, total, results } = evaluateWords();
+  checkedResults = results;
+  scoreCounterEl.textContent = `${correctCount} de ${total} palavras`;
+  updateHighlights();
+
+  if (correctCount === total) {
+    triggerCelebration();
+  }
+}
+
+// Botão Reiniciar: limpa tabuleiro e localStorage
+function handleReset() {
+  boardState = createEmptyBoardState();
+  checkedResults = null;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) {
+    // Ignora
   }
 
-  resetBtn.addEventListener('click', ()=>{ clearState(); render(); })
-  directionSelect.addEventListener('change', ()=>{ active.dir = directionSelect.value; highlightActive(); updateClueBox() })
+  for (let r = 0; r < PUZZLE.height; r++) {
+    for (let c = 0; c < PUZZLE.width; c++) {
+      if (cellMap[r][c].isPlayable) {
+        const input = getInputAt(r, c);
+        if (input) input.value = "";
+      }
+    }
+  }
 
-  // init: load embedded puzzle so the app works under file:// protocol
-  loadPuzzleFromObject(PUZZLE)
+  updateScoreCounter();
+  updateHighlights();
+  celebrationOverlayEl.classList.add("hidden");
 
-  // expose for debug
-  window._crossword = { loadPuzzleFromObject }
+  const first = PUZZLE.entries[0];
+  if (first) {
+    activeDirection = first.dir;
+    updateDirectionLabel();
+    focusCell(first.row, first.col);
+  }
+}
 
-})()
+// Efeito de comemoração e congratulação quando todas as palavras estiverem corretas
+function triggerCelebration() {
+  confettiContainerEl.innerHTML = "";
+  const colors = ["#2563eb", "#16a34a", "#eab308", "#dc2626", "#9333ea", "#06b6d4"];
+
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti-piece";
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.backgroundColor = colors[i % colors.length];
+    piece.style.animationDuration = `${2 + Math.random() * 2.2}s`;
+    piece.style.animationDelay = `${Math.random() * 0.6}s`;
+    confettiContainerEl.appendChild(piece);
+  }
+
+  celebrationOverlayEl.classList.remove("hidden");
+}
+
+// Eventos dos botões principais
+directionBtn.addEventListener("click", () => {
+  activeDirection = activeDirection === "across" ? "down" : "across";
+  updateDirectionLabel();
+  updateHighlights();
+  if (focusedCell) {
+    focusCell(focusedCell.row, focusedCell.col);
+  }
+});
+
+checkBtn.addEventListener("click", handleCheck);
+resetBtn.addEventListener("click", handleReset);
+
+closeCelebrationBtn.addEventListener("click", () => {
+  celebrationOverlayEl.classList.add("hidden");
+});
+
+restartCelebrationBtn.addEventListener("click", handleReset);
+
+// Inicialização da aplicação
+function init() {
+  buildCellMap();
+  loadState();
+  renderGrid();
+  renderClues();
+  updateScoreCounter();
+
+  const first = PUZZLE.entries[0];
+  if (first) {
+    activeDirection = first.dir;
+    updateDirectionLabel();
+    focusCell(first.row, first.col);
+  }
+}
+
+init();

@@ -1,0 +1,15 @@
+1 CPU = Peça responsável pelo processamento de dados, ou o nome incorretamente dado à um gabinete.
+2 ULA = Componente que faz as contas em uma calculadora, ou uma dança típica Havaiana sem sua letra inicial.
+3 UC (Unidade de Controle) = Componente que encaminha aquilo que você encaminha para outras partes (Mas não inverta o nome dela!).
+4 registradores = Tipo de memória que fica no topo da hierarquia.
+5 RAM = Memória temporária em segundo lugar na hierarquia de memórias, ou carneiro em Inglês
+6 ROM = Memória que armazena a parte mais essencial de sua placa mãe.
+7 EEPROM = Tipo de memória comumente utilizada para manter dados mesmo após uma queda de energia.
+8 FLASH = armazenamento não volátil comumente encontrada em SSDs, ou super-herói velocista
+9 CACHE = Memória volátil de altíssima velocidade que funciona como ponte intermediária entra o processador e a RAM.  Ou remuneração de um artista.
+10 MEMORIADEMASSA = Armazenamento permanente onde o seu sistema operacional está localizado, por exemplo.
+11 DMA = Recurso de hardware que permite que os dispositivos de hardware acessem a memória do sistema independentemente da CPU.
+12 ADDRESSBUS = Linha física que transporta “endereços”, similar à um transporte coletivo altamente usado.
+13 DATABUS = Sistema de comunicação entre diferentes componentes em um computador. 
+14 MICROCONTROLADOR = Computador pequeno e completo, responsável por tarefas específicas e relativamente simples. 
+15 DUALCORE = Quando um processador possui exatamente dois núcleos de processamento.

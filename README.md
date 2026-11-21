@@ -1,21 +1,38 @@
-# Palavras Cruzadas — Versão Inicial
+# Cruzadinha de Arquitetura Computacional
 
-Este repositório contém uma base mínima para um jogo de palavras cruzadas em JavaScript puro (sem frameworks). O objetivo desta versão é prover uma interface local, offline (execução local); o puzzle está embutido no JavaScript para permitir execução via file://.
+Jogo de palavras cruzadas desenvolvido em HTML, CSS e JavaScript puros para revisar conceitos fundamentais de Arquitetura Computacional.
 
-Como usar
-- Abra a pasta em um servidor local simples (recomendado) ou abra index.html diretamente no navegador (algumas funcionalidades dependem de fetch e podem requerer servidor). Um servidor simples em Python pode ser executado com:
+## Link do Site Publicado
 
-  python -m http.server 8000
+- Acesse o jogo online: `https://SEU-USUARIO.github.io/arqcomp-cruzadinha/` *(substitua `SEU-USUARIO` pelo seu nome de usuário do GitHub após ativar o GitHub Pages)*
 
- - O puzzle está embutido no JavaScript. A página foi adaptada para rodar sem servidor — você pode abrir index.html diretamente (protocolo file://) no navegador e o jogo será carregado.
+## Como Jogar
 
-Formato de puzzle (schema)
-- Internamente o app espera um objeto com as mesmas propriedades (width, height, entries). Nesta versão, o puzzle está embutido no arquivo script.js e não é necessário fornecer um JSON externo.
+1. Clique em qualquer célula branca do tabuleiro ou em uma pista na lista lateral para selecionar a palavra.
+2. Digite as letras diretamente nas casas do tabuleiro (o cursor avança automaticamente para a próxima casa da palavra).
+3. Use as **setas do teclado** para navegar, **Backspace** para apagar e voltar, **Tab** ou **Enter** para ir para a próxima palavra, ou clique no botão **Direção** (ou duas vezes na mesma casa cruzada) para alternar entre **Horizontal** e **Vertical**.
+4. O progresso fica salvo automaticamente no navegador (`localStorage`).
+5. Clique em **Conferir** para destacar as palavras certas (verde) e erradas (vermelho) e atualizar o contador de acertos.
+6. Ao acertar todas as 15 palavras e clicar em **Conferir**, uma tela de comemoração será exibida.
+7. Clique em **Reiniciar** para limpar o tabuleiro e começar novamente.
 
-Notas de implementação
-- Persistência temporária: o estado do grid é salvo no localStorage (chave: crossword:current) e restaurado ao recarregar a página.
-- Revelação automática: quando todas as letras de uma entrada coincidirem com a solução, a palavra é marcada visualmente como "revelada".
-- Service Worker não está incluído nesta versão inicial — a aplicação é pensada para execução local.
+## Palavras e Pistas Utilizadas
 
-Arquivo de exemplo
-- O exemplo de puzzle (RAM e FLASH) está embutido em script.js nesta versão.
+### Horizontais
+- **1. ROM**: Memória que armazena a parte mais essencial de sua placa mãe.
+- **4. RAM**: Memória temporária em segundo lugar na hierarquia de memórias, ou carneiro em Inglês
+- **5. ULA**: Componente que faz as contas em uma calculadora, ou uma dança típica Havaiana sem sua letra inicial.
+- **9. MICROCONTROLADOR**: Computador pequeno e completo, responsável por tarefas específicas e relativamente simples.
+- **10. REGISTRADORES**: Tipo de memória que fica no topo da hierarquia.
+- **12. CACHE**: Memória volátil de altíssima velocidade que funciona como ponte intermediária entra o processador e a RAM. Ou remuneração de um artista.
+- **13. DATABUS**: Sistema de comunicação entre diferentes componentes em um computador.
+- **14. FLASH**: armazenamento não volátil comumente encontrada em SSDs, ou super-herói velocista
+
+### Verticais
+- **2. MEMORIADEMASSA**: Armazenamento permanente onde o seu sistema operacional está localizado, por exemplo.
+- **3. DUALCORE**: Quando um processador possui exatamente dois núcleos de processamento.
+- **6. ADDRESSBUS**: Linha física que transporta “endereços”, similar à um transporte coletivo altamente usado.
+- **7. DMA**: Recurso de hardware que permite que os dispositivos de hardware acessem a memória do sistema independentemente da CPU.
+- **8. UC**: Componente que encaminha aquilo que você encaminha para outras partes (Mas não inverta o nome dela!).
+- **11. EEPROM**: Tipo de memória comumente utilizada para manter dados mesmo após uma queda de energia.
+- **12. CPU**: Peça responsável pelo processamento de dados, ou o nome incorretamente dado à um gabinete.

@@ -1,35 +1,77 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Palavras Cruzadas — Inicial</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cruzadinha — Arquitetura Computacional</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>Palavras Cruzadas</h1>
+  <header class="app-header">
+    <h1>Cruzadinha de Arquitetura Computacional</h1>
+    <p class="subtitle">Preencha o tabuleiro com os conceitos estudados em aula</p>
   </header>
 
-  <main>
-    <section class="controls">
-      <button id="reset">Reiniciar</button>
-      <label class="direction-toggle">Direção:
-        <select id="direction">
-          <option value="across">Across</option>
-          <option value="down">Down</option>
-        </select>
-      </label>
-    </section>
+  <main class="app-main">
+    <section class="board-section" aria-label="Tabuleiro de palavras cruzadas">
+      <div class="toolbar">
+        <div class="status-badge" aria-live="polite">
+          <span>Acertos:</span>
+          <strong id="score-counter">0 de 15 palavras</strong>
+        </div>
 
-    <section id="puzzleArea">
-      <div id="gridContainer"></div>
-      <div id="clueBox">
-        <div id="clueLabel">Pista</div>
-        <div id="clueText">Nenhuma pista</div>
+        <div class="controls">
+          <button type="button" id="btn-direction" class="btn btn-secondary" title="Alternar direção de digitação">
+            Direção: <strong id="direction-label">Horizontal</strong>
+          </button>
+          <button type="button" id="btn-check" class="btn btn-primary">
+            Conferir
+          </button>
+          <button type="button" id="btn-reset" class="btn btn-danger">
+            Reiniciar
+          </button>
+        </div>
+      </div>
+
+      <div id="active-clue-bar" class="active-clue-bar" aria-live="polite">
+        <span class="active-clue-tag" id="active-clue-tag">Selecione uma célula</span>
+        <span class="active-clue-text" id="active-clue-text">Clique em qualquer casa branca do tabuleiro para ver a pista correspondente.</span>
+      </div>
+
+      <div class="grid-wrapper">
+        <div id="crossword-grid" class="crossword-grid" role="grid" aria-label="Grelha da cruzadinha"></div>
       </div>
     </section>
+
+    <aside class="clues-section" aria-label="Lista de pistas">
+      <div class="clues-card">
+        <h2>Horizontais</h2>
+        <ul id="clues-across" class="clues-list"></ul>
+      </div>
+
+      <div class="clues-card">
+        <h2>Verticais</h2>
+        <ul id="clues-down" class="clues-list"></ul>
+      </div>
+    </aside>
   </main>
+
+  <!-- Modal / Efeito de comemoração ao acertar todas as palavras -->
+  <div id="celebration-overlay" class="celebration-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="celebration-title">
+    <div id="confetti-container" class="confetti-container" aria-hidden="true"></div>
+    <div class="celebration-modal">
+      <div class="trophy-icon" aria-hidden="true">🏆</div>
+      <h2 id="celebration-title">Parabéns! Você completou a cruzadinha!</h2>
+      <p id="celebration-message">Todas as 15 palavras de Arquitetura Computacional foram acertadas.</p>
+      <div class="celebration-actions">
+        <button type="button" id="btn-close-celebration" class="btn btn-primary">Continuar vendo o tabuleiro</button>
+        <button type="button" id="btn-restart-celebration" class="btn btn-secondary">Jogar novamente</button>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

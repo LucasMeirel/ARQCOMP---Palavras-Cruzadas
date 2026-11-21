@@ -1,39 +1,397 @@
-:root{
-  --bg:#f5f5f7;
-  --cell:#ffffff;
-  --black:#222222;
-  --accent:#4a90e2;
-  --revealed:#dff0d8;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-*{box-sizing:border-box;font-family:Segoe UI, Roboto, Arial, sans-serif}
-body{margin:0;background:var(--bg);color:#111}
-header{padding:18px 24px;background:#fff;border-bottom:1px solid #e6e6e6}
-h1{margin:0;font-size:18px}
-main{max-width:900px;margin:28px auto;padding:20px}
-.controls{display:flex;gap:12px;align-items:center;margin-bottom:18px}
-.controls .file input{display:none}
-.controls button, .controls select{padding:8px 10px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer}
-#puzzleArea{display:flex;gap:20px;align-items:flex-start}
-#gridContainer{background:transparent}
-.grid{display:grid;gap:4px;border-radius:8px}
-.cell{width:68px;height:68px;border:1px solid #cfcfcf;background:var(--cell);display:flex;align-items:center;justify-content:center;position:relative}
-.cell input{width:100%;height:100%;border:0;background:transparent;text-align:center;font-size:28px;font-weight:600;padding:0}
-.cell.black{background:var(--black);border-color:var(--black)}
-.cell .number{position:absolute;left:4px;top:2px;font-size:10px;color:#555}
-.cell.revealed{background:var(--revealed)}
-.cell.active{outline:3px solid rgba(74,144,226,0.25)}
-.puzzle-container{display:flex;gap:20px;align-items:flex-start}
-#clueBox{flex:0 0 380px;background:#fff;border:1px solid #e0e0e0;padding:16px;border-radius:8px}
-#clueLabel{font-weight:700;margin-bottom:8px;font-size:16px}
-#clueText{min-height:72px;font-size:15px}
-.revealControls{margin-top:12px;display:flex;gap:8px}
 
-/* responsive-ish */
-@media(max-width:800px){main{padding:10px;margin:10px} .cell{width:48px;height:48px} .cell input{font-size:18px}}
+:root {
+  --bg-page: #f4f6f9;
+  --bg-surface: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+  --cell-size: 36px;
+  --cell-black: #1e293b;
+  --cell-active-word: #e0f2fe;
+  --cell-active-focus: #bae6fd;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --correct-bg: #dcfce7;
+  --correct-border: #16a34a;
+  --correct-text: #14532d;
+  --wrong-bg: #fee2e2;
+  --wrong-border: #dc2626;
+  --wrong-text: #7f1d1d;
+}
 
-/* Confetti */
-.confetti-piece{position:absolute;width:10px;height:14px;border-radius:2px;opacity:0.9;transform-origin:center;animation-name:confetti-fall;animation-timing-function:linear}
-@keyframes confetti-fall{
-  0%{transform:translateY(-10px) rotate(0deg);opacity:1}
-  100%{transform:translateY(380px) rotate(720deg);opacity:0.9}
+body {
+  font-family: "Poppins", system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  padding: 18px 24px;
+  text-align: center;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.app-header .subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.app-main {
+  width: 100%;
+  max-width: 1280px;
+  margin: 24px auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.board-section {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-badge {
+  background-color: #f1f5f9;
+  border: 1px solid var(--border-color);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.status-badge strong {
+  color: var(--primary);
+  margin-left: 4px;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background-color: #f8fafc;
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background-color: var(--danger-hover);
+}
+
+.active-clue-bar {
+  width: 100%;
+  background-color: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.active-clue-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.active-clue-text {
+  font-size: 0.92rem;
+  color: var(--text-main);
+  min-height: 1.4em;
+}
+
+.grid-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+}
+
+.crossword-grid {
+  display: grid;
+  border: 2px solid var(--cell-black);
+  background-color: var(--cell-black);
+  gap: 1px;
+  user-select: none;
+}
+
+.cell {
+  width: var(--cell-size);
+  height: var(--cell-size);
+  position: relative;
+  background-color: #ffffff;
+}
+
+.cell.black {
+  background-color: var(--cell-black);
+}
+
+.cell-number {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #475569;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.cell-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: center;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-main);
+  padding-top: 6px;
+  cursor: pointer;
+}
+
+.cell.in-active-word {
+  background-color: var(--cell-active-word);
+}
+
+.cell.is-focused {
+  background-color: var(--cell-active-focus);
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+.cell.word-correct {
+  background-color: var(--correct-bg);
+}
+
+.cell.word-correct .cell-input {
+  color: var(--correct-text);
+}
+
+.cell.word-wrong {
+  background-color: var(--wrong-bg);
+}
+
+.cell.word-wrong .cell-input {
+  color: var(--wrong-text);
+}
+
+.clues-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.clues-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.clues-card h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.clues-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clue-item {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.clue-item:hover {
+  background-color: #f1f5f9;
+}
+
+.clue-item.active {
+  background-color: var(--cell-active-word);
+  border-color: #7dd3fc;
+}
+
+.clue-item.correct {
+  background-color: var(--correct-bg);
+  color: var(--correct-text);
+}
+
+.clue-item.wrong {
+  background-color: var(--wrong-bg);
+  color: var(--wrong-text);
+}
+
+.clue-num {
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+/* Comemoração */
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.celebration-overlay.hidden {
+  display: none;
+}
+
+.celebration-modal {
+  position: relative;
+  z-index: 2;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 460px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.25);
+  animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.88);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.trophy-icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.celebration-modal h2 {
+  font-size: 1.35rem;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.celebration-modal p {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.celebration-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.confetti-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -12px;
+  width: 10px;
+  height: 16px;
+  opacity: 0.9;
+  animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+  to {
+    transform: translateY(105vh) rotate(720deg);
+  }
 }

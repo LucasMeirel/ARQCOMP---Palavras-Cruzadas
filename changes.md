@@ -10,6 +10,9 @@ Alterações já aplicadas
 - Implementado render da grelha, inputs por célula, navegação por teclado e persistência no localStorage (chave: crossword:current).
 - Implementado normalização interna das palavras e entradas para MAIÚSCULAS, sem acentos e sem espaços (conforme AGENT.MD).
 - Removidos botões de revelar letra/palavra da UI.
+- Enforce: entradas não podem se cruzar; o carregamento do puzzle agora valida e rejeita puzzles com células compartilhadas (conflito). Em caso de conflito a UI exibirá mensagem de erro e não renderizará o puzzle.
+ - Enforce: entradas não podem se cruzar com letras diferentes — cruzamentos são permitidos somente quando a letra coincidir e desde que o cruzamento não ocorra no primeiro ou último caractere de qualquer palavra. Palavras também não podem começar onde outras terminam.
+ - Grid sizing: o tamanho das células agora é calculado dinamicamente para garantir que a cruzadinha caiba inteiramente na tela (não há scroll). O CSS variável --cell-size é atualizada pelo JS para garantir exact match entre layout e DOM.
 - Ajustado tamanho dos elementos centrais (células, fontes e caixa de pista) para maior destaque.
 - Adicionado efeito de confete (confetti) que é acionado ao completar todas as palavras corretamente.
 - Atualizado README.md e plano-implementacao.md para refletir a execução local e as mudanças de arquitetura.
