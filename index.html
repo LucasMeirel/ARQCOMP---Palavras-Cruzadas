@@ -12,14 +12,14 @@
 <body>
   <header class="app-header">
     <h1>Cruzadinha de Arquitetura Computacional</h1>
-    <p class="subtitle">Preencha o tabuleiro com os conceitos estudados em aula</p>
+    <p class="subtitle">Acerte as palavras para montar cada componente na placa-mãe</p>
   </header>
 
   <main class="app-main">
     <section class="board-section" aria-label="Tabuleiro de palavras cruzadas">
       <div class="toolbar">
         <div class="status-badge" aria-live="polite">
-          <span>Acertos:</span>
+          <span>Peças montadas:</span>
           <strong id="score-counter">0 de 15 palavras</strong>
         </div>
 
@@ -46,17 +46,162 @@
       </div>
     </section>
 
-    <aside class="clues-section" aria-label="Lista de pistas">
-      <div class="clues-card">
-        <h2>Horizontais</h2>
-        <ul id="clues-across" class="clues-list"></ul>
-      </div>
+    <div class="right-column">
+      <!-- Visualização interativa da Placa-Mãe sendo montada -->
+      <section class="motherboard-card" aria-label="Montagem visual da placa-mãe">
+        <div class="motherboard-header">
+          <div>
+            <h2>Placa-Mãe Interativa</h2>
+            <p class="motherboard-subtitle">Cada palavra acertada instala o componente correspondente</p>
+          </div>
+          <span id="mobo-progress" class="mobo-progress">0% montado</span>
+        </div>
 
-      <div class="clues-card">
-        <h2>Verticais</h2>
-        <ul id="clues-down" class="clues-list"></ul>
-      </div>
-    </aside>
+        <div class="motherboard-stage">
+          <svg id="motherboard-svg" viewBox="0 0 640 420" role="img" aria-label="Diagrama da placa-mãe com componentes instaláveis">
+            <defs>
+              <pattern id="pcb-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#16302b" stroke-width="0.8" />
+              </pattern>
+            </defs>
+
+            <!-- Base da PCB da Placa-Mãe -->
+            <rect x="12" y="12" width="616" height="396" rx="14" fill="#0f2420" stroke="#2d5a50" stroke-width="3" />
+            <rect x="12" y="12" width="616" height="396" rx="14" fill="url(#pcb-grid)" />
+
+            <!-- Furos de fixação nos cantos -->
+            <circle cx="30" cy="30" r="6" fill="#091513" stroke="#eab308" stroke-width="2" />
+            <circle cx="610" cy="30" r="6" fill="#091513" stroke="#eab308" stroke-width="2" />
+            <circle cx="30" cy="390" r="6" fill="#091513" stroke="#eab308" stroke-width="2" />
+            <circle cx="610" cy="390" r="6" fill="#091513" stroke="#eab308" stroke-width="2" />
+
+            <!-- Painel traseiro I/O decorativo -->
+            <rect x="24" y="48" width="28" height="120" rx="4" fill="#1e293b" stroke="#475569" stroke-width="1.5" />
+            <text x="38" y="108" fill="#94a3b8" font-size="9" font-weight="600" text-anchor="middle" transform="rotate(-90 38 108)">PAINEL I/O</text>
+
+            <!-- 1. ADDRESSBUS: Trilhas de Barramento de Endereços -->
+            <g class="mobo-part" data-word="ADDRESSBUS">
+              <path class="part-trace" d="M 275 145 L 395 145 M 275 153 L 395 153 M 275 161 L 395 161" fill="none" stroke-width="2.5" stroke-linecap="round" />
+              <rect class="part-box" x="285" y="124" width="100" height="16" rx="4" />
+              <text class="part-label" x="335" y="135" text-anchor="middle">ADDRESS BUS</text>
+            </g>
+
+            <!-- 2. DATABUS: Trilhas de Barramento de Dados -->
+            <g class="mobo-part" data-word="DATABUS">
+              <path class="part-trace" d="M 275 215 L 395 215 M 275 223 L 395 223 M 275 231 L 395 231" fill="none" stroke-width="2.5" stroke-linecap="round" />
+              <rect class="part-box" x="292" y="237" width="86" height="16" rx="4" />
+              <text class="part-label" x="335" y="248" text-anchor="middle">DATA BUS</text>
+            </g>
+
+            <!-- 3. CPU: Soquete e Processador Principal -->
+            <g class="mobo-part" data-word="CPU">
+              <rect class="part-box" x="85" y="65" width="190" height="190" rx="10" stroke-width="2" />
+              <text class="part-title" x="180" y="84" text-anchor="middle">CPU (PROCESSADOR)</text>
+            </g>
+
+            <!-- 4. UC: Unidade de Controle (dentro da CPU) -->
+            <g class="mobo-part" data-word="UC">
+              <rect class="part-box" x="98" y="94" width="76" height="44" rx="6" />
+              <text class="part-label" x="136" y="114" text-anchor="middle">UC</text>
+              <text class="part-sub" x="136" y="128" text-anchor="middle">Controle</text>
+            </g>
+
+            <!-- 5. ULA: Unidade Lógica e Aritmética (dentro da CPU) -->
+            <g class="mobo-part" data-word="ULA">
+              <rect class="part-box" x="186" y="94" width="76" height="44" rx="6" />
+              <text class="part-label" x="224" y="114" text-anchor="middle">ULA</text>
+              <text class="part-sub" x="224" y="128" text-anchor="middle">Lógica/Arit.</text>
+            </g>
+
+            <!-- 6. REGISTRADORES: Topo da hierarquia (dentro da CPU) -->
+            <g class="mobo-part" data-word="REGISTRADORES">
+              <rect class="part-box" x="98" y="146" width="164" height="30" rx="5" />
+              <text class="part-label" x="180" y="165" text-anchor="middle">REGISTRADORES</text>
+            </g>
+
+            <!-- 7. DUALCORE: Núcleos de Processamento (dentro da CPU) -->
+            <g class="mobo-part" data-word="DUALCORE">
+              <rect class="part-box" x="98" y="182" width="78" height="28" rx="4" />
+              <text class="part-sub" x="137" y="200" text-anchor="middle">CORE 0</text>
+              <rect class="part-box" x="184" y="182" width="78" height="28" rx="4" />
+              <text class="part-sub" x="223" y="200" text-anchor="middle">CORE 1 (DUAL)</text>
+            </g>
+
+            <!-- 8. CACHE: Memória Cache integrada à CPU -->
+            <g class="mobo-part" data-word="CACHE">
+              <rect class="part-box" x="98" y="216" width="164" height="28" rx="5" />
+              <text class="part-label" x="180" y="234" text-anchor="middle">MEMÓRIA CACHE</text>
+            </g>
+
+            <!-- 9. RAM: Slots DIMM e Pentes de Memória RAM -->
+            <g class="mobo-part" data-word="RAM">
+              <rect class="part-box" x="398" y="48" width="206" height="68" rx="8" />
+              <rect class="part-sub-box" x="410" y="62" width="182" height="16" rx="3" />
+              <rect class="part-sub-box" x="410" y="86" width="182" height="16" rx="3" />
+              <text class="part-title" x="501" y="58" text-anchor="middle">MEMÓRIA RAM (SLOTS DIMM)</text>
+            </g>
+
+            <!-- 10. ROM: Chip BIOS / ROM -->
+            <g class="mobo-part" data-word="ROM">
+              <rect class="part-box" x="405" y="138" width="88" height="46" rx="6" />
+              <text class="part-label" x="449" y="159" text-anchor="middle">ROM</text>
+              <text class="part-sub" x="449" y="173" text-anchor="middle">BIOS Firmware</text>
+            </g>
+
+            <!-- 11. EEPROM: Chip EEPROM -->
+            <g class="mobo-part" data-word="EEPROM">
+              <rect class="part-box" x="508" y="138" width="96" height="46" rx="6" />
+              <text class="part-label" x="556" y="159" text-anchor="middle">EEPROM</text>
+              <text class="part-sub" x="556" y="173" text-anchor="middle">Configuração</text>
+            </g>
+
+            <!-- 12. DMA: Controlador de Acesso Direto à Memória -->
+            <g class="mobo-part" data-word="DMA">
+              <rect class="part-box" x="405" y="202" width="88" height="48" rx="6" />
+              <text class="part-label" x="449" y="224" text-anchor="middle">DMA</text>
+              <text class="part-sub" x="449" y="238" text-anchor="middle">Acesso Direto</text>
+            </g>
+
+            <!-- 13. MICROCONTROLADOR: Chip Microcontrolador na placa -->
+            <g class="mobo-part" data-word="MICROCONTROLADOR">
+              <rect class="part-box" x="508" y="202" width="96" height="48" rx="6" />
+              <text class="part-sub" x="556" y="223" text-anchor="middle">MICRO-</text>
+              <text class="part-sub" x="556" y="237" text-anchor="middle">CONTROLADOR</text>
+            </g>
+
+            <!-- 14. FLASH: Slot M.2 / Memória Flash -->
+            <g class="mobo-part" data-word="FLASH">
+              <rect class="part-box" x="85" y="286" width="235" height="82" rx="8" />
+              <rect class="part-sub-box" x="102" y="312" width="196" height="36" rx="4" />
+              <text class="part-title" x="202" y="303" text-anchor="middle">SLOT M.2 — MEMÓRIA FLASH</text>
+              <text class="part-label" x="200" y="334" text-anchor="middle">NAND FLASH SSD</text>
+            </g>
+
+            <!-- 15. MEMORIADEMASSA: Conector SATA / Armazenamento de Massa -->
+            <g class="mobo-part" data-word="MEMORIADEMASSA">
+              <rect class="part-box" x="348" y="286" width="256" height="82" rx="8" />
+              <rect class="part-sub-box" x="366" y="312" width="220" height="36" rx="4" />
+              <text class="part-title" x="476" y="303" text-anchor="middle">CONECTOR SATA</text>
+              <text class="part-label" x="476" y="334" text-anchor="middle">MEMÓRIA DE MASSA</text>
+            </g>
+          </svg>
+        </div>
+
+        <div id="mobo-legend" class="mobo-legend" aria-label="Status dos componentes da placa-mãe"></div>
+      </section>
+
+      <aside class="clues-section" aria-label="Lista de pistas">
+        <div class="clues-card">
+          <h2>Horizontais</h2>
+          <ul id="clues-across" class="clues-list"></ul>
+        </div>
+
+        <div class="clues-card">
+          <h2>Verticais</h2>
+          <ul id="clues-down" class="clues-list"></ul>
+        </div>
+      </aside>
+    </div>
   </main>
 
   <!-- Modal / Efeito de comemoração ao acertar todas as palavras -->
@@ -64,10 +209,10 @@
     <div id="confetti-container" class="confetti-container" aria-hidden="true"></div>
     <div class="celebration-modal">
       <div class="trophy-icon" aria-hidden="true">🏆</div>
-      <h2 id="celebration-title">Parabéns! Você completou a cruzadinha!</h2>
-      <p id="celebration-message">Todas as 15 palavras de Arquitetura Computacional foram acertadas.</p>
+      <h2 id="celebration-title">Parabéns! PC 100% montado!</h2>
+      <p id="celebration-message">Você acertou todas as 15 palavras e instalou todos os componentes na placa-mãe.</p>
       <div class="celebration-actions">
-        <button type="button" id="btn-close-celebration" class="btn btn-primary">Continuar vendo o tabuleiro</button>
+        <button type="button" id="btn-close-celebration" class="btn btn-primary">Continuar vendo a placa-mãe</button>
         <button type="button" id="btn-restart-celebration" class="btn btn-secondary">Jogar novamente</button>
       </div>
     </div>

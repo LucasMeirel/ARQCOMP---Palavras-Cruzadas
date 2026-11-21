@@ -130,10 +130,11 @@ const STORAGE_KEY = "arqcomp:cruzadinha:v1";
 
 // Estado da aplicação
 let boardState = []; // Matriz [row][col] com caracteres digitados
-let cellMap = [];    // Matriz [row][col] com metadados da célula (letra esperada, número, palavras associadas)
+let cellMap = [];    // Matriz [row][col] com metadados da célula
 let activeDirection = "across"; // "across" | "down"
 let focusedCell = null; // { row, col }
-let checkedResults = null; // Map de chave da palavra -> true (certa) | false (errada) | null
+let checkedResults = null; // Map de chave da palavra -> true (certa) | false (errada)
+let installedWords = new Set(); // Conjunto de palavras já montadas na placa-mãe
 
 // Referências de elementos da interface
 const gridEl = document.getElementById("crossword-grid");
@@ -150,13 +151,16 @@ const celebrationOverlayEl = document.getElementById("celebration-overlay");
 const confettiContainerEl = document.getElementById("confetti-container");
 const closeCelebrationBtn = document.getElementById("btn-close-celebration");
 const restartCelebrationBtn = document.getElementById("btn-restart-celebration");
+const moboProgressEl = document.getElementById("mobo-progress");
+const moboLegendEl = document.getElementById("mobo-legend");
+const motherboardSvgEl = document.getElementById("motherboard-svg");
 
 // Normaliza caractere para letra maiúscula sem acento (A-Z)
 function normalizeLetter(raw) {
   if (!raw) return "";
   const cleaned = raw
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-zA-Z]/g, "")
     .toUpperCase();
   return cleaned.length > 0 ? cleaned[cleaned.length - 1] : "";
@@ -272,6 +276,18 @@ function renderGrid() {
   }
 }
 
+// Renderiza os chips da legenda da placa-mãe
+function renderMotherboardLegend() {
+  moboLegendEl.innerHTML = "";
+  PUZZLE.entries.forEach((entry) => {
+    const chip = document.createElement("span");
+    chip.className = "mobo-chip";
+    chip.dataset.word = entry.word;
+    chip.textContent = entry.word;
+    moboLegendEl.appendChild(chip);
+  });
+}
+
 // Renderiza as listas de pistas Horizontais e Verticais
 function renderClues() {
   cluesAcrossEl.innerHTML = "";
@@ -328,7 +344,6 @@ function handleCellFocus(r, c) {
 }
 
 function handleCellClick(r, c) {
-  // Se clicar novamente na mesma célula já focada e ela cruzar duas palavras, alterna a direção
   if (focusedCell && focusedCell.row === r && focusedCell.col === c) {
     const meta = cellMap[r][c];
     if (meta.entries.length > 1) {
@@ -344,13 +359,12 @@ function handleCellInput(e, r, c) {
   e.target.value = letter;
   boardState[r][c] = letter;
 
-  // Limpa marcação visual de conferência anterior ao editar
   if (checkedResults) {
     checkedResults = null;
   }
 
   saveState();
-  updateScoreCounter();
+  updateScoreAndMotherboard(true);
   updateHighlights();
 
   if (letter) {
@@ -366,7 +380,7 @@ function handleCellKeyDown(e, r, c) {
       e.target.value = "";
       if (checkedResults) checkedResults = null;
       saveState();
-      updateScoreCounter();
+      updateScoreAndMotherboard(false);
       updateHighlights();
     } else {
       moveToPrevCellInWord(r, c);
@@ -380,7 +394,7 @@ function handleCellKeyDown(e, r, c) {
     e.target.value = "";
     if (checkedResults) checkedResults = null;
     saveState();
-    updateScoreCounter();
+    updateScoreAndMotherboard(false);
     updateHighlights();
     return;
   }
@@ -465,7 +479,6 @@ function updateDirectionLabel() {
 function updateHighlights() {
   const activeEntry = getActiveEntry();
 
-  // Atualiza barra da pista ativa
   if (activeEntry) {
     const dirName = activeEntry.dir === "across" ? "Horizontal" : "Vertical";
     activeClueTagEl.textContent = `${activeEntry.number} — ${dirName}`;
@@ -475,7 +488,6 @@ function updateHighlights() {
     activeClueTextEl.textContent = "Clique em qualquer casa branca do tabuleiro para ver a pista correspondente.";
   }
 
-  // Conjuntos de coordenadas da palavra ativa e de palavras certas/erradas
   const activeCoords = new Set();
   if (activeEntry) {
     for (let i = 0; i < activeEntry.word.length; i++) {
@@ -503,7 +515,6 @@ function updateHighlights() {
     });
   }
 
-  // Atualiza classes de cada célula
   const cells = gridEl.querySelectorAll(".cell");
   cells.forEach((cellEl) => {
     const r = Number(cellEl.dataset.row);
@@ -527,7 +538,6 @@ function updateHighlights() {
     }
   });
 
-  // Atualiza classes da lista de pistas
   const clueItems = document.querySelectorAll(".clue-item");
   clueItems.forEach((item) => {
     const key = item.dataset.key;
@@ -549,6 +559,7 @@ function updateHighlights() {
 function evaluateWords() {
   let correctCount = 0;
   const results = new Map();
+  const currentCorrectWords = new Set();
 
   PUZZLE.entries.forEach((entry) => {
     let userWord = "";
@@ -561,26 +572,61 @@ function evaluateWords() {
     if (userWord === entry.word) {
       correctCount++;
       results.set(entryKey(entry), true);
-    } else if (userWord.length > 0) {
-      results.set(entryKey(entry), false);
+      currentCorrectWords.add(entry.word);
     } else {
       results.set(entryKey(entry), false);
     }
   });
 
-  return { correctCount, total: PUZZLE.entries.length, results };
+  return { correctCount, total: PUZZLE.entries.length, results, currentCorrectWords };
 }
 
-function updateScoreCounter() {
-  const { correctCount, total } = evaluateWords();
+// Atualiza o contador de acertos e monta/desmonta os componentes na placa-mãe
+function updateScoreAndMotherboard(animateNew = true) {
+  const { correctCount, total, currentCorrectWords } = evaluateWords();
   scoreCounterEl.textContent = `${correctCount} de ${total} palavras`;
+
+  const percent = Math.round((correctCount / total) * 100);
+  moboProgressEl.textContent = `${percent}% montado`;
+
+  // Atualiza cada peça gráfica no SVG da placa-mãe
+  const parts = motherboardSvgEl.querySelectorAll(".mobo-part");
+  parts.forEach((partEl) => {
+    const word = partEl.dataset.word;
+    const isNowCorrect = currentCorrectWords.has(word);
+    const wasInstalled = installedWords.has(word);
+
+    if (isNowCorrect) {
+      partEl.classList.add("installed");
+      if (!wasInstalled && animateNew) {
+        partEl.classList.remove("just-installed");
+        void partEl.offsetWidth; // reinicia animação CSS
+        partEl.classList.add("just-installed");
+      }
+    } else {
+      partEl.classList.remove("installed", "just-installed");
+    }
+  });
+
+  // Atualiza chips da legenda abaixo da placa-mãe
+  const chips = moboLegendEl.querySelectorAll(".mobo-chip");
+  chips.forEach((chip) => {
+    const word = chip.dataset.word;
+    if (currentCorrectWords.has(word)) {
+      chip.classList.add("installed");
+    } else {
+      chip.classList.remove("installed");
+    }
+  });
+
+  installedWords = currentCorrectWords;
 }
 
 // Botão Conferir: marca palavras certas/erradas, atualiza contador e celebra se 100% corretas
 function handleCheck() {
   const { correctCount, total, results } = evaluateWords();
   checkedResults = results;
-  scoreCounterEl.textContent = `${correctCount} de ${total} palavras`;
+  updateScoreAndMotherboard(true);
   updateHighlights();
 
   if (correctCount === total) {
@@ -588,10 +634,12 @@ function handleCheck() {
   }
 }
 
-// Botão Reiniciar: limpa tabuleiro e localStorage
+// Botão Reiniciar: limpa tabuleiro, placa-mãe e localStorage
 function handleReset() {
   boardState = createEmptyBoardState();
   checkedResults = null;
+  installedWords = new Set();
+
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (e) {
@@ -607,7 +655,7 @@ function handleReset() {
     }
   }
 
-  updateScoreCounter();
+  updateScoreAndMotherboard(false);
   updateHighlights();
   celebrationOverlayEl.classList.add("hidden");
 
@@ -661,8 +709,9 @@ function init() {
   buildCellMap();
   loadState();
   renderGrid();
+  renderMotherboardLegend();
   renderClues();
-  updateScoreCounter();
+  updateScoreAndMotherboard(false);
 
   const first = PUZZLE.entries[0];
   if (first) {

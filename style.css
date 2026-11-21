@@ -10,7 +10,7 @@
   --text-main: #1e293b;
   --text-muted: #64748b;
   --border-color: #cbd5e1;
-  --cell-size: 36px;
+  --cell-size: 34px;
   --cell-black: #1e293b;
   --cell-active-word: #e0f2fe;
   --cell-active-focus: #bae6fd;
@@ -38,42 +38,43 @@ body {
 .app-header {
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
-  padding: 18px 24px;
+  padding: 16px 24px;
   text-align: center;
 }
 
 .app-header h1 {
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 700;
   color: var(--text-main);
 }
 
 .app-header .subtitle {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
 .app-main {
   width: 100%;
-  max-width: 1280px;
-  margin: 24px auto;
-  padding: 0 24px;
+  max-width: 1400px;
+  margin: 20px auto;
+  padding: 0 20px;
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 24px;
+  grid-template-columns: 612px minmax(0, 1fr);
+  gap: 20px;
   align-items: start;
 }
 
 .board-section {
+  width: 612px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 20px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .toolbar {
@@ -82,15 +83,15 @@ body {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .status-badge {
   background-color: #f1f5f9;
   border: 1px solid var(--border-color);
-  padding: 8px 14px;
+  padding: 7px 12px;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .status-badge strong {
@@ -106,9 +107,9 @@ body {
 
 .btn {
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 0.84rem;
   font-weight: 500;
-  padding: 8px 14px;
+  padding: 7px 12px;
   border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
@@ -145,34 +146,44 @@ body {
 
 .active-clue-bar {
   width: 100%;
+  min-height: 74px;
   background-color: #f8fafc;
   border: 1px solid var(--border-color);
   border-left: 4px solid var(--primary);
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 9px 12px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 2px;
+  overflow-wrap: break-word;
 }
 
 .active-clue-tag {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--primary);
 }
 
 .active-clue-text {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
+  line-height: 1.35;
   color: var(--text-main);
-  min-height: 1.4em;
+  min-height: 2.7em;
+}
+
+#direction-label {
+  display: inline-block;
+  min-width: 74px;
+  text-align: left;
 }
 
 .grid-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 6px;
+  padding: 4px;
 }
 
 .crossword-grid {
@@ -198,7 +209,7 @@ body {
   position: absolute;
   top: 2px;
   left: 3px;
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 700;
   line-height: 1;
   color: #475569;
@@ -214,7 +225,7 @@ body {
   background: transparent;
   text-align: center;
   font-family: inherit;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-main);
@@ -247,6 +258,191 @@ body {
   color: var(--wrong-text);
 }
 
+/* Coluna direita: Placa-mãe + Pistas */
+.right-column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.motherboard-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.motherboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.motherboard-header h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.motherboard-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.mobo-progress {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.motherboard-stage {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background-color: #081210;
+  border-radius: 10px;
+  padding: 8px;
+}
+
+#motherboard-svg {
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  display: block;
+}
+
+/* Estado padrão (encaixe vazio/tracejado aguardando acerto) */
+.mobo-part .part-box {
+  fill: rgba(15, 23, 42, 0.55);
+  stroke: #3b6e63;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  transition: fill 0.35s ease, stroke 0.35s ease, stroke-width 0.35s ease;
+}
+
+.mobo-part .part-sub-box {
+  fill: rgba(15, 23, 42, 0.45);
+  stroke: #335c53;
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  transition: fill 0.35s ease, stroke 0.35s ease;
+}
+
+.mobo-part .part-trace {
+  stroke: #2a4f47;
+  stroke-dasharray: 4 3;
+  transition: stroke 0.35s ease;
+}
+
+.mobo-part .part-title,
+.mobo-part .part-label,
+.mobo-part .part-sub {
+  font-family: "Poppins", sans-serif;
+  fill: #4b7c71;
+  transition: fill 0.35s ease;
+  pointer-events: none;
+}
+
+.mobo-part .part-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.mobo-part .part-label {
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.mobo-part .part-sub {
+  font-size: 8.5px;
+  font-weight: 600;
+}
+
+/* Estado instalado (quando a palavra correspondente é acertada) */
+.mobo-part.installed .part-box {
+  fill: #1e293b;
+  stroke: #22c55e;
+  stroke-width: 2.2;
+  stroke-dasharray: none;
+}
+
+.mobo-part.installed .part-sub-box {
+  fill: #0f172a;
+  stroke: #eab308;
+  stroke-width: 1.4;
+  stroke-dasharray: none;
+}
+
+.mobo-part.installed .part-trace {
+  stroke: #eab308;
+  stroke-dasharray: none;
+}
+
+.mobo-part.installed .part-title {
+  fill: #86efac;
+}
+
+.mobo-part.installed .part-label {
+  fill: #ffffff;
+}
+
+.mobo-part.installed .part-sub {
+  fill: #fde047;
+}
+
+/* Destaque da peça recém-instalada */
+.mobo-part.just-installed {
+  animation: partInstallPulse 0.75s ease-out;
+}
+
+@keyframes partInstallPulse {
+  0% {
+    filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0));
+  }
+  40% {
+    filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.95));
+  }
+  100% {
+    filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0));
+  }
+}
+
+/* Chips de legenda das peças instaladas */
+.mobo-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mobo-chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  transition: all 0.25s ease;
+}
+
+.mobo-chip.installed {
+  background-color: #dcfce7;
+  color: #14532d;
+  border-color: #16a34a;
+}
+
+/* Lista de pistas */
 .clues-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -257,13 +453,13 @@ body {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 18px;
+  padding: 16px;
 }
 
 .clues-card h2 {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-main);
@@ -273,13 +469,15 @@ body {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  max-height: 310px;
+  overflow-y: auto;
 }
 
 .clue-item {
-  font-size: 0.85rem;
-  line-height: 1.4;
-  padding: 8px 10px;
+  font-size: 0.82rem;
+  line-height: 1.38;
+  padding: 7px 9px;
   border-radius: 6px;
   border: 1px solid transparent;
   cursor: pointer;

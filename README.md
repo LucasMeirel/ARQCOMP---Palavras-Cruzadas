@@ -1,6 +1,6 @@
 # Cruzadinha de Arquitetura Computacional
 
-Jogo de palavras cruzadas desenvolvido em HTML, CSS e JavaScript puros para revisar conceitos fundamentais de Arquitetura Computacional.
+Jogo de palavras cruzadas desenvolvido em HTML, CSS e JavaScript puros para revisar conceitos fundamentais de Arquitetura Computacional, com montagem visual interativa de uma placa-mãe em tempo real.
 
 ## Link do Site Publicado
 
@@ -11,12 +11,13 @@ Jogo de palavras cruzadas desenvolvido em HTML, CSS e JavaScript puros para revi
 1. Clique em qualquer célula branca do tabuleiro ou em uma pista na lista lateral para selecionar a palavra.
 2. Digite as letras diretamente nas casas do tabuleiro (o cursor avança automaticamente para a próxima casa da palavra).
 3. Use as **setas do teclado** para navegar, **Backspace** para apagar e voltar, **Tab** ou **Enter** para ir para a próxima palavra, ou clique no botão **Direção** (ou duas vezes na mesma casa cruzada) para alternar entre **Horizontal** e **Vertical**.
-4. O progresso fica salvo automaticamente no navegador (`localStorage`).
-5. Clique em **Conferir** para destacar as palavras certas (verde) e erradas (vermelho) e atualizar o contador de acertos.
-6. Ao acertar todas as 15 palavras e clicar em **Conferir**, uma tela de comemoração será exibida.
-7. Clique em **Reiniciar** para limpar o tabuleiro e começar novamente.
+4. A cada palavra acertada no tabuleiro, o componente correspondente é instalado visualmente na **Placa-Mãe Interativa** ao lado.
+5. O progresso fica salvo automaticamente no navegador (`localStorage`).
+6. Clique em **Conferir** para destacar as palavras certas (verde) e erradas (vermelho) e atualizar o contador de acertos.
+7. Ao acertar todas as 15 palavras e clicar em **Conferir**, uma tela de comemoração será exibida.
+8. Clique em **Reiniciar** para limpar o tabuleiro, desmontar a placa-mãe e começar novamente.
 
-## Palavras e Pistas Utilizadas
+## Palavras e Pistas Utilizadas (SPOILER!)
 
 ### Horizontais
 - **1. ROM**: Memória que armazena a parte mais essencial de sua placa mãe.
